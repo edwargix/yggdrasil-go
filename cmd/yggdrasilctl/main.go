@@ -65,8 +65,9 @@ func run() int {
 	args := flag.Args()
 
 	if *ver {
-		fmt.Println("Build name:", version.BuildName())
-		fmt.Println("Build version:", version.BuildVersion())
+		buildTimeMetadata := &version.BuildTimeMetadata{}
+		fmt.Println("Build name:", buildTimeMetadata.BuildName())
+		fmt.Println("Build version:", buildTimeMetadata.BuildVersion())
 		fmt.Println("To get the version number of the running Yggdrasil node, run", os.Args[0], "getSelf")
 		return 0
 	}

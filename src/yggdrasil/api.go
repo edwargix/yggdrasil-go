@@ -12,6 +12,7 @@ import (
 	"github.com/yggdrasil-network/yggdrasil-go/src/address"
 	"github.com/yggdrasil-network/yggdrasil-go/src/crypto"
 	"github.com/yggdrasil-network/yggdrasil-go/src/types"
+	"github.com/yggdrasil-network/yggdrasil-go/src/version"
 
 	"github.com/Arceliar/phony"
 )
@@ -343,6 +344,21 @@ func (c *Core) Subnet() net.IPNet {
 	subnet := address.SubnetForNodeID(c.NodeID())[:]
 	subnet = append(subnet, 0, 0, 0, 0, 0, 0, 0, 0)
 	return net.IPNet{IP: subnet, Mask: net.CIDRMask(64, 128)}
+}
+
+// BuildName gets the build name.
+func (c *Core) GetBuildName() string {
+	return c.buildinfo.BuildName()
+}
+
+// BuildVersion gets the build version.
+func (c *Core) GetBuildVersion() string {
+	return c.buildinfo.BuildVersion()
+}
+
+// SetBuildInfo sets the build information.
+func (c *Core) SetBuildInfo(buildinfo version.BuildInfo) {
+	c.buildinfo = buildinfo
 }
 
 // MyNodeInfo gets the currently configured nodeinfo. NodeInfo is typically

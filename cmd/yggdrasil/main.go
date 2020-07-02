@@ -178,8 +178,9 @@ func main() {
 	var err error
 	switch {
 	case *ver:
-		fmt.Println("Build name:", version.BuildName())
-		fmt.Println("Build version:", version.BuildVersion())
+		buildTimeMetadata := &version.BuildTimeMetadata{}
+		fmt.Println("Build name:", buildTimeMetadata.BuildName())
+		fmt.Println("Build version:", buildTimeMetadata.BuildVersion())
 		return
 	case *autoconf:
 		// Use an autoconf-generated config, this will give us random keys and
@@ -253,7 +254,7 @@ func main() {
 	case "stdout":
 		logger = log.New(os.Stdout, "", log.Flags())
 	case "syslog":
-		if syslogger, err := gsyslog.NewLogger(gsyslog.LOG_NOTICE, "DAEMON", version.BuildName()); err == nil {
+		if syslogger, err := gsyslog.NewLogger(gsyslog.LOG_NOTICE, "DAEMON", "yggdrasil"); err == nil {
 			logger = log.New(syslogger, "", log.Flags())
 		}
 	default:

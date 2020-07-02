@@ -18,7 +18,6 @@ import (
 	"github.com/yggdrasil-network/yggdrasil-go/src/config"
 	"github.com/yggdrasil-network/yggdrasil-go/src/crypto"
 	"github.com/yggdrasil-network/yggdrasil-go/src/util"
-	"github.com/yggdrasil-network/yggdrasil-go/src/version"
 	"github.com/yggdrasil-network/yggdrasil-go/src/yggdrasil"
 )
 
@@ -89,8 +88,8 @@ func (a *AdminSocket) SetupAdminHandlers(na *AdminSocket) {
 			"self": Info{
 				ip: Info{
 					"box_pub_key":   a.core.EncryptionPublicKey(),
-					"build_name":    version.BuildName(),
-					"build_version": version.BuildVersion(),
+					"build_name":    a.core.GetBuildName(),
+					"build_version": a.core.GetBuildVersion(),
 					"coords":        fmt.Sprintf("%v", a.core.Coords()),
 					"subnet":        subnet.String(),
 				},

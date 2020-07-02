@@ -3,9 +3,16 @@ package version
 var buildName string
 var buildVersion string
 
+type BuildInfo interface {
+	BuildName() string
+	BuildVersion() string
+}
+
+type BuildTimeMetadata struct{}
+
 // BuildName gets the current build name. This is usually injected if built
 // from git, or returns "unknown" otherwise.
-func BuildName() string {
+func (b *BuildTimeMetadata) BuildName() string {
 	if buildName == "" {
 		return "unknown"
 	}
@@ -14,7 +21,7 @@ func BuildName() string {
 
 // BuildVersion gets the current build version. This is usually injected if
 // built from git, or returns "unknown" otherwise.
-func BuildVersion() string {
+func (b *BuildTimeMetadata) BuildVersion() string {
 	if buildVersion == "" {
 		return "unknown"
 	}

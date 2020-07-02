@@ -22,6 +22,7 @@ type Core struct {
 	// guarantee that it will be covered by the mutex
 	phony.Inbox
 	config       config.NodeState // Config
+	buildinfo    version.BuildInfo
 	boxPub       crypto.BoxPubKey
 	boxPriv      crypto.BoxPrivKey
 	sigPub       crypto.SigPubKey
@@ -152,10 +153,14 @@ func (c *Core) _start(nc *config.NodeConfig, log *log.Logger) (*config.NodeState
 		Previous: *nc,
 	}
 
-	if name := version.BuildName(); name != "unknown" {
+	if c.buildinfo == nil {
+		c.buildinfo = &version.BuildTimeMetadata{}
+	}
+
+	if name := c.buildinfo.BuildName(); name != "unknown" {
 		c.log.Infoln("Build name:", name)
 	}
-	if version := version.BuildVersion(); version != "unknown" {
+	if version := c.buildinfo.BuildVersion(); version != "unknown" {
 		c.log.Infoln("Build version:", version)
 	}
 

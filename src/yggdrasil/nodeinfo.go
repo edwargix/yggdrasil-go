@@ -9,7 +9,6 @@ import (
 
 	"github.com/Arceliar/phony"
 	"github.com/yggdrasil-network/yggdrasil-go/src/crypto"
-	"github.com/yggdrasil-network/yggdrasil-go/src/version"
 )
 
 type nodeinfo struct {
@@ -115,8 +114,8 @@ func (m *nodeinfo) setNodeInfo(given interface{}, privacy bool) (err error) {
 
 func (m *nodeinfo) _setNodeInfo(given interface{}, privacy bool) error {
 	defaults := map[string]interface{}{
-		"buildname":     version.BuildName(),
-		"buildversion":  version.BuildVersion(),
+		"buildname":     m.core.buildinfo.BuildName(),
+		"buildversion":  m.core.buildinfo.BuildVersion(),
 		"buildplatform": runtime.GOOS,
 		"buildarch":     runtime.GOARCH,
 	}
