@@ -42,7 +42,8 @@ type Peer struct {
 // connections using instances of this struct. You should use the AddPeer or
 // RemovePeer functions instead.
 type SwitchPeer struct {
-	PublicKey  crypto.BoxPubKey // The public key of the remote node
+	PublicKey  crypto.BoxPubKey // The curve25519 public key of the remote node
+	SigningKey crypto.SigPubKey // The ed25519 public key of the remote node
 	Coords     []uint64         // The coordinates of the remote node
 	BytesSent  uint64           // Number of bytes sent via this switch port
 	BytesRecvd uint64           // Number of bytes received via this switch port
@@ -169,6 +170,7 @@ func (c *Core) GetSwitchPeers() []SwitchPeer {
 				Endpoint:   peer.intf.remote(),
 			}
 			copy(info.PublicKey[:], peer.box[:])
+			copy(info.SigningKey[:], peer.sig[:])
 		})
 		switchpeers = append(switchpeers, info)
 	}
