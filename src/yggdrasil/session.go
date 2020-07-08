@@ -225,7 +225,9 @@ func (ss *sessions) createSession(theirPermKey *crypto.BoxPubKey) *sessionInfo {
 	ss.byTheirPerm[sinfo.theirPermPub] = &sinfo.myHandle
 	if atomic.CompareAndSwapInt32(&sinfo.hasReaper, 0, 1) {
 		go sinfo.reaper()
-		go ss.notifySessionNew(sinfo.theirPermPub)
+		if ss.notifySessionNew != nil {
+			go ss.notifySessionNew(sinfo.theirPermPub)
+		}
 	}
 	return &sinfo
 }
@@ -285,7 +287,9 @@ func (ss *sessions) removeSession(sinfo *sessionInfo) {
 	if s := sinfo.sessions.sinfos[sinfo.myHandle]; s == sinfo {
 		delete(sinfo.sessions.sinfos, sinfo.myHandle)
 		delete(sinfo.sessions.byTheirPerm, sinfo.theirPermPub)
-		go ss.notifySessionGone(sinfo.theirPermPub)
+		if ss.notifySessionGone != nil {
+			go ss.notifySessionGone(sinfo.theirPermPub)
+		}
 	}
 }
 
