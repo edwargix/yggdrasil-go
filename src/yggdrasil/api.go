@@ -258,7 +258,9 @@ func (c *Core) Resolve(nodeID, nodeMask *crypto.NodeID) (fullNodeID *crypto.Node
 						fullNodeID = crypto.GetNodeID(&sinfo.theirPermPub)
 						boxPubKey = &sinfo.theirPermPub
 					}
-					err = e
+					if e != nil {
+						err = fmt.Errorf("search completed with error: %w", e)
+					}
 					close(done)
 				}
 			}

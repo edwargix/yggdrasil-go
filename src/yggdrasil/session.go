@@ -6,7 +6,9 @@ package yggdrasil
 
 import (
 	"bytes"
+	"errors"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/yggdrasil-network/yggdrasil-go/src/address"
@@ -41,6 +43,8 @@ type sessionInfo struct {
 	time          time.Time           // Time we last received a packet
 	mtuTime       time.Time           // time myMTU was last changed
 	pingTime      time.Time           // time the first ping was sent since the last received packet
+	hasReaper     int32               // atomics; does this session have an active reaper?
+	renew         chan struct{}       // notify the reaper that we received a packet
 	coords        []byte              // coords of destination
 	reset         bool                // reset if coords change
 	tstamp        int64               // ATOMIC - tstamp from their last session ping, replay attack mitigation
@@ -194,6 +198,7 @@ func (ss *sessions) createSession(theirPermKey *crypto.BoxPubKey) *sessionInfo {
 	sinfo.pingTime = now
 	sinfo.init = make(chan struct{})
 	sinfo.cancel = util.NewCancellation()
+	sinfo.renew = make(chan struct{})
 	higher := false
 	for idx := range ss.router.core.boxPub {
 		if ss.router.core.boxPub[idx] > sinfo.theirPermPub[idx] {
@@ -216,7 +221,26 @@ func (ss *sessions) createSession(theirPermKey *crypto.BoxPubKey) *sessionInfo {
 	sinfo.table = ss.router.table
 	ss.sinfos[sinfo.myHandle] = &sinfo
 	ss.byTheirPerm[sinfo.theirPermPub] = &sinfo.myHandle
+	if atomic.CompareAndSwapInt32(&sinfo.hasReaper, 0, 1) {
+		go sinfo.reaper()
+	}
 	return &sinfo
+}
+
+func (sinfo *sessionInfo) reaper() {
+	defer close(sinfo.renew)
+	for {
+		select {
+		case <-sinfo.renew:
+			continue
+		case <-sinfo.cancel.Finished():
+			return
+		case <-time.After(time.Second * 60):
+			sinfo.cancel.Cancel(errors.New("session timed out"))
+			sinfo.sessions.removeSession(sinfo)
+			return
+		}
+	}
 }
 
 func (ss *sessions) cleanup() {
@@ -352,6 +376,7 @@ func (ss *sessions) handlePing(ping *sessionPing) {
 				return
 			}
 			if !ping.IsPong {
+				sinfo.renew <- struct{}{}
 				sinfo._sendPingPong(true)
 			}
 		})
@@ -447,6 +472,7 @@ func (sinfo *sessionInfo) _recvPacket(p *wire_trafficPacket) {
 			}
 			sinfo._updateNonce(&p.Nonce)
 			sinfo.bytesRecvd += uint64(len(bs))
+			sinfo.renew <- struct{}{}
 			sinfo.sessions.packetConn.Act(sinfo, func() {
 				sinfo.sessions.packetConn._sendToReader(&sinfo.theirPermPub, bs)
 			})

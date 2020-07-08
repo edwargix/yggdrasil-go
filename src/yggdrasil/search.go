@@ -263,9 +263,11 @@ func (sinfo *searchInfo) checkDHTRes(res *dhtRes) bool {
 		} else if _, isIn := sinfo.searches.router.sessions.getByTheirPerm(&res.Key); !isIn {
 			panic("This should never happen")
 		}
-	} else {
+	} /* else {
+		// TODO: Is this really an error condition? It seems like this is
+		// an acceptable outcome
 		err = errors.New("session already exists")
-	}
+	} */
 	finishSearch(sess, err)
 	return true
 }

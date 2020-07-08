@@ -165,14 +165,16 @@ func (tun *TunAdapter) _handlePacket(recvd []byte, err error) {
 			tun.log.Errorln("Didn't find node ID/mask")
 			return
 		}
-
 		_, boxPubKey, err = tun.core.Resolve(dstNodeID, dstNodeMask)
-		if err != nil {
-			tun.log.Errorln("tun.core.Resolve:", err)
+		if err == nil {
+			tun.addrToBoxPubKey[dstAddr] = boxPubKey
+			tun.subnetToBoxPubKey[dstSnet] = boxPubKey
+		} else {
+			tun.log.Debugln("tun.core.Resolve:", err)
+			delete(tun.addrToBoxPubKey, dstAddr)
+			delete(tun.subnetToBoxPubKey, dstSnet)
 			return
 		}
-		tun.addrToBoxPubKey[dstAddr] = boxPubKey
-		tun.subnetToBoxPubKey[dstSnet] = boxPubKey
 	}
 
 	if boxPubKey == nil {
