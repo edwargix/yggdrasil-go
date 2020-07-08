@@ -28,6 +28,8 @@ type links struct {
 	tcp     tcp // TCP interface support
 	stopped chan struct{}
 	// TODO timeout (to remove from switch), read from config.ReadTimeout
+	notifyLinkNew  func(boxPubKey crypto.BoxPubKey, linkType, remote string)
+	notifyLinkGone func(boxPubKey crypto.BoxPubKey, linkType, remote string)
 }
 
 type linkInfo struct {
@@ -296,6 +298,9 @@ func (intf *link) handler() error {
 	go intf.peer.start()
 	intf.Act(nil, intf._notifyIdle)
 	intf.reader.Act(nil, intf.reader._read)
+	if intf.links.notifyLinkNew != nil {
+		go intf.links.notifyLinkNew(intf.info.box, intf.info.linkType, intf.info.remote)
+	}
 	// Wait for the reader to finish
 	// TODO find a way to do this without keeping live goroutines around
 	done := make(chan struct{})
@@ -307,6 +312,9 @@ func (intf *link) handler() error {
 		case <-done:
 		}
 	}()
+	if intf.links.notifyLinkGone != nil {
+		go intf.links.notifyLinkGone(intf.info.box, intf.info.linkType, intf.info.remote)
+	}
 	err = <-intf.reader.err
 	// TODO don't report an error if it's just a 'use of closed network connection'
 	if err != nil {
