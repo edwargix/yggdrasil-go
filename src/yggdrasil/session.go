@@ -110,17 +110,15 @@ func (s *sessionInfo) _update(p *sessionPing) bool {
 // Sessions are indexed by handle.
 // Additionally, stores maps of address/subnet onto keys, and keys onto handles.
 type sessions struct {
-	router            *router
-	packetConn        *PacketConn
-	lastCleanup       time.Time
-	isAllowedHandler  func(pubkey *crypto.BoxPubKey, initiator bool) bool // Returns true or false if session setup is allowed
-	isAllowedMutex    sync.RWMutex                                        // Protects the above
-	myMaximumMTU      types.MTU                                           // Maximum allowed session MTU
-	permShared        map[crypto.BoxPubKey]*crypto.BoxSharedKey           // Maps known permanent keys to their shared key, used by DHT a lot
-	sinfos            map[crypto.Handle]*sessionInfo                      // Maps handle onto session info
-	byTheirPerm       map[crypto.BoxPubKey]*crypto.Handle                 // Maps theirPermPub onto handle
-	notifySessionNew  func(boxPubKey crypto.BoxPubKey)
-	notifySessionGone func(boxPubKey crypto.BoxPubKey)
+	router           *router
+	packetConn       *PacketConn
+	lastCleanup      time.Time
+	isAllowedHandler func(pubkey *crypto.BoxPubKey, initiator bool) bool // Returns true or false if session setup is allowed
+	isAllowedMutex   sync.RWMutex                                        // Protects the above
+	myMaximumMTU     types.MTU                                           // Maximum allowed session MTU
+	permShared       map[crypto.BoxPubKey]*crypto.BoxSharedKey           // Maps known permanent keys to their shared key, used by DHT a lot
+	sinfos           map[crypto.Handle]*sessionInfo                      // Maps handle onto session info
+	byTheirPerm      map[crypto.BoxPubKey]*crypto.Handle                 // Maps theirPermPub onto handle
 }
 
 // Initializes the session struct.
@@ -225,9 +223,6 @@ func (ss *sessions) createSession(theirPermKey *crypto.BoxPubKey) *sessionInfo {
 	ss.byTheirPerm[sinfo.theirPermPub] = &sinfo.myHandle
 	if atomic.CompareAndSwapInt32(&sinfo.hasReaper, 0, 1) {
 		go sinfo.reaper()
-		if ss.notifySessionNew != nil {
-			go ss.notifySessionNew(sinfo.theirPermPub)
-		}
 	}
 	return &sinfo
 }
@@ -287,9 +282,6 @@ func (ss *sessions) removeSession(sinfo *sessionInfo) {
 	if s := sinfo.sessions.sinfos[sinfo.myHandle]; s == sinfo {
 		delete(sinfo.sessions.sinfos, sinfo.myHandle)
 		delete(sinfo.sessions.byTheirPerm, sinfo.theirPermPub)
-		if ss.notifySessionGone != nil {
-			go ss.notifySessionGone(sinfo.theirPermPub)
-		}
 	}
 }
 

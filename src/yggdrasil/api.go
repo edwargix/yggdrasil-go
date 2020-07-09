@@ -367,32 +367,16 @@ func (c *Core) SetBuildInfo(buildinfo version.BuildInfo) {
 
 // NotifyLinkPeerNew sets the function that is called to notify about new
 // peers.
-func (c *Core) NotifyLinkNew(f func(boxPubKey crypto.BoxPubKey, linkType, remote string)) {
+func (c *Core) NotifyLinkNew(f func(boxPubKey crypto.BoxPubKey, sigPubKey crypto.SigPubKey, linkType, remote string)) {
 	// TODO: act?
 	c.links.notifyLinkNew = f
 }
 
 // NotifyLinkPeerNew sets the function that is called to notify about removed
 // peers.
-func (c *Core) NotifyLinkGone(f func(boxPubKey crypto.BoxPubKey, linkType, remote string)) {
+func (c *Core) NotifyLinkGone(f func(boxPubKey crypto.BoxPubKey, sigPubKey crypto.SigPubKey, linkType, remote string)) {
 	// TODO: act?
 	c.links.notifyLinkGone = f
-}
-
-// NotifySessionNew sets the function that is called to notify about new
-// sessions.
-func (c *Core) NotifySessionNew(f func(boxPubKey crypto.BoxPubKey)) {
-	c.router.Act(c, func() {
-		c.router.sessions.notifySessionNew = f
-	})
-}
-
-// NotifySessionGone sets the function that is called to notify about removed
-// sessions.
-func (c *Core) NotifySessionGone(f func(boxPubKey crypto.BoxPubKey)) {
-	c.router.Act(c, func() {
-		c.router.sessions.notifySessionGone = f
-	})
 }
 
 // MyNodeInfo gets the currently configured nodeinfo. NodeInfo is typically
