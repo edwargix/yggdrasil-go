@@ -152,6 +152,9 @@ func (m *Multicast) _updateConfig(config *config.NodeConfig) {
 			m.log.Errorln("Error starting multicast module:", err)
 		}
 	}
+	for _, info := range m.listeners {
+		info.interval = time.Second
+	}
 	m.log.Debugln("Reloaded multicast configuration successfully")
 }
 
