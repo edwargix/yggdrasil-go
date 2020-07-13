@@ -134,6 +134,7 @@ func (m *Multicast) _stop() error {
 // needed.
 func (m *Multicast) UpdateConfig(config *config.NodeConfig) {
 	m.Act(nil, func() { m._updateConfig(config) })
+	m.Act(nil, m._multicastStarted)
 }
 
 func (m *Multicast) _updateConfig(config *config.NodeConfig) {

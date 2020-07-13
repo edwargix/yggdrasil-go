@@ -42,7 +42,7 @@ func (m *Multicast) _multicastStarted() {
 			break
 		}
 	}
-	time.AfterFunc(time.Minute, func() {
+	time.AfterFunc(time.Second, func() {
 		m.Act(nil, m._multicastStarted)
 	})
 }
